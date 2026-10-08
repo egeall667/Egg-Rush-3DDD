@@ -1,0 +1,3755 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Egg Rush</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#111;
+}
+
+canvas{
+    display:block;
+}
+
+/* START */
+
+#startScreen{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:
+        radial-gradient(
+            circle at center,
+            #3d8b40 0%,
+            #173719 55%,
+            #081308 100%
+        );
+    color:white;
+}
+
+#startScreen h1{
+    font-size:70px;
+    margin:0 0 10px;
+    text-shadow:0 5px 15px #000;
+}
+
+#startScreen p{
+    font-size:20px;
+    margin:5px 0 25px;
+}
+
+#startButton{
+    border:0;
+    border-radius:14px;
+    padding:18px 45px;
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#ffd21c;
+    color:#111;
+    box-shadow:0 8px 20px #0008;
+}
+
+#startButton:hover{
+    transform:scale(1.05);
+}
+
+/* HUD */
+
+#hud{
+    position:fixed;
+    top:15px;
+    left:15px;
+    z-index:20;
+    color:white;
+    background:#0009;
+    padding:12px 15px;
+    border-radius:12px;
+    font-size:16px;
+    line-height:1.7;
+    user-select:none;
+}
+
+#onlineStatus{
+    position:fixed;
+    top:15px;
+    right:15px;
+    z-index:25;
+    background:#0009;
+    color:#fff;
+    padding:9px 13px;
+    border-radius:10px;
+    font-size:14px;
+}
+
+#controls{
+    position:fixed;
+    bottom:15px;
+    left:15px;
+    z-index:20;
+    color:white;
+    background:#0009;
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:14px;
+}
+
+/* EVENT */
+
+#eventBox{
+    position:fixed;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:30;
+    color:white;
+    background:#111d;
+    border:2px solid #fff4;
+    padding:12px 22px;
+    border-radius:12px;
+    font-weight:bold;
+    display:none;
+    pointer-events:none;
+}
+
+/* CHAT */
+
+#chatBox{
+    position:fixed;
+    left:50%;
+    bottom:55px;
+    transform:translateX(-50%);
+    z-index:80;
+    display:none;
+    width:min(500px,90vw);
+}
+
+#chatInput{
+    width:100%;
+    padding:14px;
+    border:2px solid #fff8;
+    border-radius:12px;
+    outline:none;
+    background:#111e;
+    color:white;
+    font-size:18px;
+}
+
+#chatHint{
+    margin-top:5px;
+    color:#ddd;
+    font-size:12px;
+    text-align:center;
+}
+
+#bubble{
+    position:fixed;
+    z-index:50;
+    display:none;
+    transform:translate(-50%,-100%);
+    max-width:300px;
+    padding:9px 14px;
+    border-radius:12px;
+    background:white;
+    color:#111;
+    font-weight:bold;
+    box-shadow:0 5px 15px #0008;
+    pointer-events:none;
+    text-align:center;
+}
+
+/* SHOP */
+
+#shop{
+    position:fixed;
+    inset:0;
+    z-index:70;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:#0009;
+}
+
+.shopPanel{
+    width:min(500px,92vw);
+    max-height:90vh;
+    overflow:auto;
+    background:#202020;
+    color:white;
+    border:2px solid #fff3;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 20px 50px #000;
+}
+
+.shopPanel h2{
+    margin-top:0;
+    text-align:center;
+}
+
+.shopInfo{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.shopBtn{
+    width:100%;
+    border:0;
+    border-radius:10px;
+    padding:13px;
+    margin:6px 0;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.shopBtn:hover{
+    transform:scale(1.02);
+}
+
+.buyBtn{
+    background:#ffd21c;
+    color:#111;
+}
+
+.closeBtn{
+    background:#e74c3c;
+    color:white;
+}
+
+#codeInput{
+    width:100%;
+    padding:12px;
+    border:0;
+    border-radius:10px;
+    font-size:16px;
+    text-align:center;
+    outline:none;
+    margin-bottom:7px;
+}
+
+/* ROOM */
+
+#roomBox{
+    position:fixed;
+    inset:0;
+    z-index:90;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:#000b;
+}
+
+.roomPanel{
+    width:min(430px,90vw);
+    background:#202020;
+    color:white;
+    border-radius:18px;
+    padding:25px;
+    box-shadow:0 20px 50px #000;
+    text-align:center;
+}
+
+#roomInput{
+    width:100%;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    outline:none;
+    font-size:20px;
+    text-align:center;
+    margin:12px 0;
+}
+
+.roomButton{
+    width:100%;
+    padding:13px;
+    border:0;
+    border-radius:10px;
+    margin:5px 0;
+    font-weight:bold;
+    font-size:16px;
+    cursor:pointer;
+}
+
+#roomJoin{
+    background:#4caf50;
+    color:white;
+}
+
+#roomClose{
+    background:#e74c3c;
+    color:white;
+}
+
+#roomStatus{
+    min-height:25px;
+    color:#ffd21c;
+    margin:8px;
+}
+
+/* ENEMY */
+
+#enemyWarning{
+    position:fixed;
+    top:80px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:40;
+    display:none;
+    background:#b00000dd;
+    color:white;
+    padding:10px 18px;
+    border-radius:12px;
+    font-weight:bold;
+    animation:pulse .7s infinite alternate;
+}
+
+@keyframes pulse{
+    from{
+        transform:translateX(-50%) scale(1);
+    }
+
+    to{
+        transform:translateX(-50%) scale(1.06);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- START -->
+
+<div id="startScreen">
+
+    <h1>🥚 EGG RUSH</h1>
+
+    <p>
+        Yumurtaları topla • Para kazan • Düşmandan kaç!
+    </p>
+
+    <button id="startButton">
+        🎮 OYUNA BAŞLA
+    </button>
+
+</div>
+
+
+<!-- HUD -->
+
+<div id="hud">
+
+    🥚 Yumurta:
+    <span id="inventory">0 / 10</span>
+
+    <br>
+
+    💰 Para:
+    $<span id="money">0</span>
+
+    <br>
+
+    ⚡ Hız:
+    <span id="speed">8</span>
+
+</div>
+
+
+<div id="onlineStatus">
+    🟢 Offline
+</div>
+
+
+<div id="controls">
+
+    WASD = Hareket |
+    SHIFT = Koş |
+    SPACE = Zıpla |
+    T = Chat |
+    E = Market |
+    R = Oda
+
+</div>
+
+
+<div id="eventBox"></div>
+
+
+<div id="enemyWarning">
+    😈 DÜŞMAN PEŞİNDE!
+</div>
+
+
+<!-- CHAT -->
+
+<div id="chatBox">
+
+    <input
+        id="chatInput"
+        maxlength="100"
+        autocomplete="off"
+        placeholder="Mesaj yaz..."
+    >
+
+    <div id="chatHint">
+        Enter = gönder • ESC = kapat
+    </div>
+
+</div>
+
+
+<div id="bubble"></div>
+
+
+<!-- MARKET -->
+
+<div id="shop">
+
+    <div class="shopPanel">
+
+        <h2>🛒 MARKET</h2>
+
+        <div class="shopInfo">
+
+            💰 Para:
+            <b>
+                $<span id="shopMoney">0</span>
+            </b>
+
+            <br>
+
+            ⚡ Hız:
+            <b>
+                <span id="shopSpeed">8</span> / 30
+            </b>
+
+            <br>
+
+            🎒 Envanter:
+            <b>
+                <span id="shopCapacity">10</span>
+            </b>
+
+        </div>
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="speed1"
+        >
+            ⚡ Hız +1 — $100
+        </button>
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="speed5"
+        >
+            ⚡ Hız +5 — $500
+        </button>
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="speed10k"
+        >
+            ⚡ Hız +5 — $10.000
+        </button>
+
+
+        <hr>
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="inv1"
+        >
+            🎒 Envanter +1 — $250
+        </button>
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="inv5"
+        >
+            🎒 Envanter +5 — $1.000
+        </button>
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="inv100"
+        >
+            🎒 Envanter +100 — $20.000
+        </button>
+
+
+        <hr>
+
+
+        <!-- RELASE -->
+
+        <h3 style="text-align:center;margin:10px 0 8px;">
+            🎁 ÖZEL KOD
+        </h3>
+
+
+        <input
+            id="codeInput"
+            type="text"
+            maxlength="20"
+            placeholder="Kod gir..."
+            autocomplete="off"
+        >
+
+
+        <button
+            class="shopBtn buyBtn"
+            id="codeButton"
+        >
+            🎁 KODU KULLAN
+        </button>
+
+
+        <hr>
+
+
+        <button
+            class="shopBtn closeBtn"
+            id="shopClose"
+        >
+            ❌ KAPAT
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ROOM -->
+
+<div id="roomBox">
+
+    <div class="roomPanel">
+
+        <h2>🌐 ONLINE ODA</h2>
+
+        <p>
+            Arkadaşınla aynı oda kodunu gir.
+        </p>
+
+
+        <input
+            id="roomInput"
+            maxlength="20"
+            placeholder="Örn: 1234"
+            autocomplete="off"
+        >
+
+
+        <div id="roomStatus"></div>
+
+
+        <button
+            class="roomButton"
+            id="roomJoin"
+        >
+            🚪 ODAYA GİR / OLUŞTUR
+        </button>
+
+
+        <button
+            class="roomButton"
+            id="roomClose"
+        >
+            ❌ KAPAT
+        </button>
+
+    </div>
+
+</div>
+
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.161/build/three.module.js";
+
+
+/* =====================================================
+   DOM
+===================================================== */
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const startButton =
+    document.getElementById("startButton");
+
+const inventoryUI =
+    document.getElementById("inventory");
+
+const moneyUI =
+    document.getElementById("money");
+
+const speedUI =
+    document.getElementById("speed");
+
+const shopMoney =
+    document.getElementById("shopMoney");
+
+const shopSpeed =
+    document.getElementById("shopSpeed");
+
+const shopCapacity =
+    document.getElementById("shopCapacity");
+
+const eventBox =
+    document.getElementById("eventBox");
+
+const chatBox =
+    document.getElementById("chatBox");
+
+const chatInput =
+    document.getElementById("chatInput");
+
+const bubble =
+    document.getElementById("bubble");
+
+const shop =
+    document.getElementById("shop");
+
+const roomBox =
+    document.getElementById("roomBox");
+
+const roomInput =
+    document.getElementById("roomInput");
+
+const roomStatus =
+    document.getElementById("roomStatus");
+
+const onlineStatus =
+    document.getElementById("onlineStatus");
+
+const enemyWarning =
+    document.getElementById("enemyWarning");
+
+
+/* =====================================================
+   GAME VARIABLES
+===================================================== */
+
+let gameStarted=false;
+
+let shopOpen=false;
+
+let mouseLocked=false;
+
+let money=0;
+
+let speed=8;
+
+const MAX_SPEED=30;
+
+let inventory=[];
+
+let inventoryCapacity=10;
+
+const MAP_LIMIT=105;
+
+let yaw=0;
+
+let pitch=0;
+
+const keys={};
+
+let jumpVelocity=0;
+
+let onGround=true;
+
+
+/* =====================================================
+   THREE
+===================================================== */
+
+const scene=
+    new THREE.Scene();
+
+scene.background=
+    new THREE.Color(0x87ceeb);
+
+scene.fog=
+    new THREE.Fog(
+        0x87ceeb,
+        80,
+        230
+    );
+
+
+const camera=
+    new THREE.PerspectiveCamera(
+        70,
+        innerWidth/innerHeight,
+        .1,
+        500
+    );
+
+
+const renderer=
+    new THREE.WebGLRenderer({
+        antialias:true
+    });
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio,2)
+);
+
+renderer.shadowMap.enabled=true;
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/* =====================================================
+   LIGHT
+===================================================== */
+
+const hemi=
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x557755,
+        1.4
+    );
+
+scene.add(hemi);
+
+
+const sun=
+    new THREE.DirectionalLight(
+        0xffffff,
+        2
+    );
+
+sun.position.set(
+    60,
+    100,
+    40
+);
+
+sun.castShadow=true;
+
+sun.shadow.mapSize.width=2048;
+
+sun.shadow.mapSize.height=2048;
+
+sun.shadow.camera.left=-120;
+
+sun.shadow.camera.right=120;
+
+sun.shadow.camera.top=120;
+
+sun.shadow.camera.bottom=-120;
+
+scene.add(sun);
+
+
+/* =====================================================
+   GROUND
+===================================================== */
+
+const ground=
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            220,
+            220
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0x3c9b42
+        })
+    );
+
+ground.rotation.x=
+    -Math.PI/2;
+
+ground.receiveShadow=true;
+
+scene.add(ground);
+
+
+/* =====================================================
+   ROAD
+===================================================== */
+
+const road=
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            16,
+            220
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0x8b6b48
+        })
+    );
+
+road.rotation.x=
+    -Math.PI/2;
+
+road.position.y=.01;
+
+scene.add(road);
+
+
+/* =====================================================
+   PLAYER
+===================================================== */
+
+const player=
+    new THREE.Group();
+
+
+const body=
+    new THREE.Mesh(
+        new THREE.CapsuleGeometry(
+            .65,
+            1.2,
+            8,
+            16
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0x2980ff
+        })
+    );
+
+body.position.y=1.15;
+
+body.castShadow=true;
+
+player.add(body);
+
+
+const head=
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .65,
+            20,
+            20
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0x6bb6ff
+        })
+    );
+
+head.position.y=2.3;
+
+head.castShadow=true;
+
+player.add(head);
+
+
+const eyeMaterial=
+    new THREE.MeshBasicMaterial({
+        color:0x111111
+    });
+
+
+const eye1=
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .08,
+            8,
+            8
+        ),
+        eyeMaterial
+    );
+
+eye1.position.set(
+    -.2,
+    2.4,
+    -.58
+);
+
+player.add(eye1);
+
+
+const eye2=
+    eye1.clone();
+
+eye2.position.x=.2;
+
+player.add(eye2);
+
+
+player.position.set(
+    0,
+    0,
+    -15
+);
+
+scene.add(player);
+
+
+/* =====================================================
+   BASE
+===================================================== */
+
+const base=
+    new THREE.Group();
+
+
+const baseBody=
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            12,
+            5,
+            10
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0xeeeeee
+        })
+    );
+
+baseBody.position.y=2.5;
+
+baseBody.castShadow=true;
+
+baseBody.receiveShadow=true;
+
+base.add(baseBody);
+
+
+const roof=
+    new THREE.Mesh(
+        new THREE.ConeGeometry(
+            9,
+            4,
+            4
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0xc0392b
+        })
+    );
+
+roof.position.y=7;
+
+roof.rotation.y=
+    Math.PI/4;
+
+roof.castShadow=true;
+
+base.add(roof);
+
+scene.add(base);
+
+
+/* =====================================================
+   MARKET BUILDING
+===================================================== */
+
+const market=
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            8,
+            5,
+            8
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0xffd21c
+        })
+    );
+
+market.position.set(
+    30,
+    2.5,
+    0
+);
+
+market.castShadow=true;
+
+scene.add(market);
+
+
+/* =====================================================
+   TREES
+===================================================== */
+
+function addTree(x,z){
+
+    const tree=
+        new THREE.Group();
+
+
+    const trunk=
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .45,
+                .6,
+                4,
+                8
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x704214
+            })
+        );
+
+    trunk.position.y=2;
+
+    trunk.castShadow=true;
+
+    tree.add(trunk);
+
+
+    const leaves=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                2.5,
+                12,
+                12
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x176b2b
+            })
+        );
+
+    leaves.position.y=5;
+
+    leaves.castShadow=true;
+
+    tree.add(leaves);
+
+
+    tree.position.set(
+        x,
+        0,
+        z
+    );
+
+    scene.add(tree);
+}
+
+
+for(let i=0;i<45;i++){
+
+    let x=
+        THREE.MathUtils.randFloat(
+            -100,
+            100
+        );
+
+    let z=
+        THREE.MathUtils.randFloat(
+            -100,
+            100
+        );
+
+
+    if(
+        Math.abs(x)<15 &&
+        Math.abs(z)<15
+    ){
+        x+=30;
+    }
+
+
+    addTree(x,z);
+}
+
+
+/* =====================================================
+   ROCKS
+===================================================== */
+
+for(let i=0;i<30;i++){
+
+    const rock=
+        new THREE.Mesh(
+            new THREE.DodecahedronGeometry(
+                THREE.MathUtils.randFloat(
+                    .4,
+                    1.3
+                )
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x777777
+            })
+        );
+
+
+    rock.position.set(
+        THREE.MathUtils.randFloat(
+            -100,
+            100
+        ),
+        .5,
+        THREE.MathUtils.randFloat(
+            -100,
+            100
+        )
+    );
+
+
+    rock.castShadow=true;
+
+    scene.add(rock);
+}
+
+
+/* =====================================================
+   EGGS
+===================================================== */
+
+const eggTypes=[
+    {
+        name:"Normal Yumurta",
+        value:10,
+        color:0xffffff,
+        chance:60
+    },
+    {
+        name:"Altın Yumurta",
+        value:25,
+        color:0xffd700,
+        chance:25
+    },
+    {
+        name:"Elmas Yumurta",
+        value:75,
+        color:0x00ffff,
+        chance:12
+    },
+    {
+        name:"EFSANE Yumurta",
+        value:200,
+        color:0xff00ff,
+        chance:3
+    }
+];
+
+
+function randomEggType(){
+
+    const roll=
+        Math.random()*100;
+
+    let total=0;
+
+
+    for(const type of eggTypes){
+
+        total+=type.chance;
+
+        if(roll<=total){
+            return type;
+        }
+    }
+
+
+    return eggTypes[0];
+}
+
+
+const eggs=[];
+
+
+function respawnEgg(egg){
+
+    const type=
+        randomEggType();
+
+
+    egg.userData.type=type;
+
+    egg.userData.collected=false;
+
+    egg.material.color.set(
+        type.color
+    );
+
+    egg.material.emissive.set(
+        type.color
+    );
+
+    egg.material.emissiveIntensity=
+        type.name==="EFSANE Yumurta"
+        ? .35
+        : .05;
+
+
+    egg.position.set(
+        THREE.MathUtils.randFloat(
+            -95,
+            95
+        ),
+        1,
+        THREE.MathUtils.randFloat(
+            -95,
+            95
+        )
+    );
+
+
+    if(
+        Math.abs(egg.position.x)<12 &&
+        Math.abs(egg.position.z)<12
+    ){
+
+        egg.position.x+=30;
+    }
+
+
+    egg.visible=true;
+}
+
+
+function createEgg(){
+
+    const type=
+        randomEggType();
+
+
+    const egg=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .55,
+                16,
+                16
+            ),
+            new THREE.MeshStandardMaterial({
+                color:type.color,
+                emissive:type.color,
+                emissiveIntensity:
+                    type.name==="EFSANE Yumurta"
+                    ? .35
+                    : .05
+            })
+        );
+
+
+    egg.scale.set(
+        .8,
+        1.2,
+        .8
+    );
+
+
+    egg.castShadow=true;
+
+
+    egg.userData.type=type;
+
+    egg.userData.collected=false;
+
+
+    respawnEgg(egg);
+
+
+    scene.add(egg);
+
+    eggs.push(egg);
+}
+
+
+for(let i=0;i<15;i++){
+
+    createEgg();
+}
+
+
+/* =====================================================
+   ENEMY
+===================================================== */
+
+const enemy=
+    new THREE.Group();
+
+
+const enemyBody=
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            1.2,
+            16,
+            16
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0xff2222
+        })
+    );
+
+
+enemyBody.castShadow=true;
+
+enemy.add(enemyBody);
+
+
+const enemyEyeMaterial=
+    new THREE.MeshBasicMaterial({
+        color:0xffffff
+    });
+
+
+const enemyEye1=
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .15,
+            8,
+            8
+        ),
+        enemyEyeMaterial
+    );
+
+
+enemyEye1.position.set(
+    -.35,
+    .25,
+    -1.05
+);
+
+
+enemy.add(enemyEye1);
+
+
+const enemyEye2=
+    enemyEye1.clone();
+
+enemyEye2.position.x=.35;
+
+enemy.add(enemyEye2);
+
+
+enemy.position.set(
+    0,
+    1.2,
+    40
+);
+
+enemy.visible=false;
+
+scene.add(enemy);
+
+
+let enemyActive=false;
+
+let enemyChasing=false;
+
+
+/* =====================================================
+   UI
+===================================================== */
+
+function updateInventoryUI(){
+
+    inventoryUI.textContent=
+        inventory.length+
+        " / "+
+        inventoryCapacity;
+
+    shopCapacity.textContent=
+        inventoryCapacity;
+}
+
+
+function updateMoney(){
+
+    moneyUI.textContent=
+        money.toLocaleString("tr-TR");
+
+    shopMoney.textContent=
+        money.toLocaleString("tr-TR");
+}
+
+
+function updateSpeed(){
+
+    speedUI.textContent=
+        speed;
+
+    shopSpeed.textContent=
+        speed;
+}
+
+
+function showEvent(message){
+
+    eventBox.textContent=
+        message;
+
+    eventBox.style.display=
+        "block";
+
+
+    clearTimeout(
+        showEvent.timer
+    );
+
+
+    showEvent.timer=
+        setTimeout(
+            ()=>{
+                eventBox.style.display=
+                    "none";
+            },
+            3500
+        );
+}
+
+
+/* =====================================================
+   🎵 AUDIO SYSTEM
+===================================================== */
+
+let audioContext=null;
+
+let musicStarted=false;
+
+let tensionMode=false;
+
+let normalMusicTimer=null;
+
+let tensionMusicTimer=null;
+
+let normalNoteIndex=0;
+
+let tensionNoteIndex=0;
+
+
+function startMusic(){
+
+    if(musicStarted){
+
+        if(
+            audioContext &&
+            audioContext.state==="suspended"
+        ){
+            audioContext.resume();
+        }
+
+        return;
+    }
+
+
+    musicStarted=true;
+
+
+    audioContext=
+        new (
+            window.AudioContext ||
+            window.webkitAudioContext
+        )();
+
+
+    playNormalMusic();
+}
+
+
+function playTone(
+    frequency,
+    duration,
+    volume,
+    type="triangle"
+){
+
+    if(!audioContext){
+        return;
+    }
+
+
+    const oscillator=
+        audioContext.createOscillator();
+
+
+    const gain=
+        audioContext.createGain();
+
+
+    oscillator.type=
+        type;
+
+
+    oscillator.frequency.value=
+        frequency;
+
+
+    gain.gain.setValueAtTime(
+        .0001,
+        audioContext.currentTime
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        volume,
+        audioContext.currentTime+.03
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        audioContext.currentTime+
+        duration
+    );
+
+
+    oscillator.connect(gain);
+
+    gain.connect(
+        audioContext.destination
+    );
+
+
+    oscillator.start();
+
+
+    oscillator.stop(
+        audioContext.currentTime+
+        duration
+    );
+}
+
+
+/* NORMAL MUSIC */
+
+const normalNotes=[
+    261.62,
+    329.63,
+    392.00,
+    329.63,
+    293.66,
+    349.23,
+    440.00,
+    349.23
+];
+
+
+function playNormalMusic(){
+
+    if(
+        !audioContext ||
+        tensionMode
+    ){
+        return;
+    }
+
+
+    playTone(
+        normalNotes[normalNoteIndex],
+        .45,
+        .035,
+        "triangle"
+    );
+
+
+    normalNoteIndex=
+        (normalNoteIndex+1)%
+        normalNotes.length;
+
+
+    normalMusicTimer=
+        setTimeout(
+            playNormalMusic,
+            500
+        );
+}
+
+
+/* TENSION MUSIC */
+
+const tensionNotes=[
+    110,
+    130.81,
+    146.83,
+    110,
+    98,
+    130.81,
+    110,
+    82.41
+];
+
+
+function playTensionMusic(){
+
+    if(
+        !audioContext ||
+        !tensionMode
+    ){
+        return;
+    }
+
+
+    playTone(
+        tensionNotes[tensionNoteIndex],
+        .32,
+        .075,
+        "sawtooth"
+    );
+
+
+    tensionNoteIndex=
+        (tensionNoteIndex+1)%
+        tensionNotes.length;
+
+
+    tensionMusicTimer=
+        setTimeout(
+            playTensionMusic,
+            350
+        );
+}
+
+
+function startTensionMusic(){
+
+    if(!audioContext){
+        return;
+    }
+
+
+    if(tensionMode){
+        return;
+    }
+
+
+    tensionMode=true;
+
+
+    clearTimeout(
+        normalMusicTimer
+    );
+
+
+    tensionNoteIndex=0;
+
+
+    playTensionMusic();
+
+
+    showEvent(
+        "😈 DÜŞMAN GELDİ! KAÇ!"
+    );
+}
+
+
+function stopTensionMusic(){
+
+    if(!audioContext){
+        return;
+    }
+
+
+    if(!tensionMode){
+        return;
+    }
+
+
+    tensionMode=false;
+
+
+    clearTimeout(
+        tensionMusicTimer
+    );
+
+
+    tensionNoteIndex=0;
+
+
+    playNormalMusic();
+}
+
+
+/* =====================================================
+   RANDOM EVENTS
+===================================================== */
+
+const randomEvents=[
+
+    "🥚 Yumurtalarına dikkat et!",
+
+    "⚡ Hızlı ol!",
+
+    "💰 Daha fazla para kazanabilirsin!",
+
+    "😈 Düşmana dikkat!",
+
+    "🥚 Haritanın her yerini kontrol et!",
+
+    "🏠 Yumurtalarını üsse götür!",
+
+    "💎 Belki sıradaki yumurta Elmas Yumurtadır!",
+
+    "👑 Efsane Yumurta bulmaya çalış!",
+
+    "🏃 Biraz hızlan!",
+
+    "🎒 Çantanı kontrol et!",
+
+    "🔥 Egg Rush devam ediyor!",
+
+    "🌳 Ağaçların arasını da kontrol et!",
+
+    "💰 Zengin olma zamanı!",
+
+    "🥚 Daha fazla yumurta topla!",
+
+    "😎 Bugün şanslı günün olabilir!",
+
+    "⚠️ Dikkatli ol!",
+
+    "💎 Nadir bir yumurta bulabilirsin!",
+
+    "🏆 En çok parayı toplamaya çalış!",
+
+    "🚨 Düşman peşinde olabilir!",
+
+    "🥚 Yumurta avı başladı!"
+];
+
+
+let randomEventTimer=null;
+
+
+function startRandomEvents(){
+
+    if(randomEventTimer){
+
+        clearTimeout(
+            randomEventTimer
+        );
+    }
+
+
+    function nextEvent(){
+
+        const delay=
+            THREE.MathUtils.randInt(
+                5000,
+                10000
+            );
+
+
+        randomEventTimer=
+            setTimeout(
+                ()=>{
+
+                    if(
+                        gameStarted &&
+                        !shopOpen &&
+                        chatBox.style.display!=="block" &&
+                        roomBox.style.display!=="flex"
+                    ){
+
+                        const index=
+                            Math.floor(
+                                Math.random()*
+                                randomEvents.length
+                            );
+
+
+                        showEvent(
+                            randomEvents[index]
+                        );
+                    }
+
+
+                    nextEvent();
+
+                },
+                delay
+            );
+    }
+
+
+    nextEvent();
+}
+
+
+/* =====================================================
+   EGG COLLECT
+===================================================== */
+
+function collectEggs(){
+
+    if(
+        !gameStarted ||
+        shopOpen
+    ){
+        return;
+    }
+
+
+    for(const egg of eggs){
+
+        if(
+            egg.userData.collected
+        ){
+            continue;
+        }
+
+
+        const distance=
+            player.position.distanceTo(
+                egg.position
+            );
+
+
+        if(
+            distance<2.2 &&
+            inventory.length<
+            inventoryCapacity
+        ){
+
+            egg.userData.collected=
+                true;
+
+            egg.visible=false;
+
+
+            inventory.push(
+                egg.userData.type
+            );
+
+
+            updateInventoryUI();
+
+
+            showEvent(
+                "🥚 "+
+                egg.userData.type.name+
+                " aldın!"
+            );
+
+
+            activateEnemy();
+        }
+    }
+
+
+    const allCollected=
+        eggs.every(
+            egg=>
+                egg.userData.collected
+        );
+
+
+    if(allCollected){
+
+        respawnAllEggs();
+
+
+        showEvent(
+            "🥚 TÜM YUMURTALAR YENİLENDİ!"
+        );
+    }
+}
+
+
+function respawnAllEggs(){
+
+    for(const egg of eggs){
+
+        respawnEgg(egg);
+    }
+}
+
+
+/* =====================================================
+   ENEMY START
+===================================================== */
+
+function activateEnemy(){
+
+    enemyActive=true;
+
+    enemyChasing=true;
+
+    enemy.visible=true;
+
+
+    const behind=
+        new THREE.Vector3(
+            0,
+            0,
+            -1
+        );
+
+
+    behind.applyAxisAngle(
+        new THREE.Vector3(
+            0,
+            1,
+            0
+        ),
+        yaw
+    );
+
+
+    enemy.position.copy(
+        player.position
+    );
+
+
+    enemy.position.addScaledVector(
+        behind,
+        22
+    );
+
+
+    enemy.position.y=1.2;
+
+
+    enemyWarning.style.display=
+        "block";
+
+
+    startTensionMusic();
+}
+
+
+/* =====================================================
+   ENEMY UPDATE
+===================================================== */
+
+function updateEnemy(delta){
+
+    if(
+        !enemyActive ||
+        !enemyChasing ||
+        !gameStarted ||
+        shopOpen
+    ){
+        return;
+    }
+
+
+    const target=
+        new THREE.Vector3(
+            player.position.x,
+            1.2,
+            player.position.z
+        );
+
+
+    const enemyPos=
+        new THREE.Vector3(
+            enemy.position.x,
+            1.2,
+            enemy.position.z
+        );
+
+
+    const direction=
+        new THREE.Vector3()
+            .subVectors(
+                target,
+                enemyPos
+            );
+
+
+    const distance=
+        direction.length();
+
+
+    if(distance>.1){
+
+        direction.normalize();
+
+
+        const enemySpeed=
+            Math.max(
+                5,
+                speed*.62
+            );
+
+
+        enemy.position.addScaledVector(
+            direction,
+            enemySpeed*delta
+        );
+
+
+        enemy.rotation.y=
+            Math.atan2(
+                direction.x,
+                direction.z
+            );
+    }
+
+
+    if(distance<2.2){
+
+        inventory=[];
+
+        updateInventoryUI();
+
+
+        showEvent(
+            "😈 Yakalandın! Yumurtalarını kaybettin!"
+        );
+
+
+        enemyActive=false;
+
+        enemyChasing=false;
+
+        enemy.visible=false;
+
+        enemyWarning.style.display=
+            "none";
+
+
+        stopTensionMusic();
+    }
+}
+
+
+/* =====================================================
+   DELIVERY
+===================================================== */
+
+function deliverEggs(){
+
+    if(
+        inventory.length===0
+    ){
+        return;
+    }
+
+
+    const distance=
+        player.position.distanceTo(
+            base.position
+        );
+
+
+    if(distance<9){
+
+        let total=0;
+
+
+        for(
+            const egg
+            of inventory
+        ){
+
+            total+=egg.value;
+        }
+
+
+        money+=total;
+
+        inventory=[];
+
+
+        updateMoney();
+
+        updateInventoryUI();
+
+
+        enemyActive=false;
+
+        enemyChasing=false;
+
+        enemy.visible=false;
+
+        enemyWarning.style.display=
+            "none";
+
+
+        stopTensionMusic();
+
+
+        showEvent(
+            "🏠 Yumurtalar teslim edildi! +$"+
+            total.toLocaleString("tr-TR")
+        );
+    }
+}
+
+
+/* =====================================================
+   PLAYER MOVEMENT
+===================================================== */
+
+function updatePlayer(delta){
+
+    if(
+        !gameStarted ||
+        shopOpen ||
+        chatBox.style.display==="block" ||
+        roomBox.style.display==="flex"
+    ){
+        return;
+    }
+
+
+    const forward=
+        new THREE.Vector3();
+
+
+    camera.getWorldDirection(
+        forward
+    );
+
+
+    forward.y=0;
+
+
+    if(
+        forward.lengthSq()<.001
+    ){
+        return;
+    }
+
+
+    forward.normalize();
+
+
+    const right=
+        new THREE.Vector3(
+            forward.z,
+            0,
+            -forward.x
+        );
+
+
+    const direction=
+        new THREE.Vector3();
+
+
+    if(keys["KeyW"]){
+        direction.add(
+            forward
+        );
+    }
+
+
+    if(keys["KeyS"]){
+        direction.sub(
+            forward
+        );
+    }
+
+
+    if(keys["KeyD"]){
+        direction.add(
+            right
+        );
+    }
+
+
+    if(keys["KeyA"]){
+        direction.sub(
+            right
+        );
+    }
+
+
+    if(
+        direction.lengthSq()>0
+    ){
+
+        direction.normalize();
+
+
+        let currentSpeed=
+            speed;
+
+
+        if(
+            keys["ShiftLeft"] ||
+            keys["ShiftRight"]
+        ){
+
+            currentSpeed*=1.5;
+        }
+
+
+        player.position.addScaledVector(
+            direction,
+            currentSpeed*delta
+        );
+
+
+        player.rotation.y=
+            Math.atan2(
+                direction.x,
+                direction.z
+            );
+    }
+
+
+    /* JUMP */
+
+    if(
+        keys["Space"] &&
+        onGround
+    ){
+
+        jumpVelocity=8;
+
+        onGround=false;
+
+        keys["Space"]=false;
+    }
+
+
+    jumpVelocity-=22*delta;
+
+
+    player.position.y+=
+        jumpVelocity*delta;
+
+
+    if(
+        player.position.y<=0
+    ){
+
+        player.position.y=0;
+
+        jumpVelocity=0;
+
+        onGround=true;
+    }
+
+
+    player.position.x=
+        THREE.MathUtils.clamp(
+            player.position.x,
+            -MAP_LIMIT,
+            MAP_LIMIT
+        );
+
+
+    player.position.z=
+        THREE.MathUtils.clamp(
+            player.position.z,
+            -MAP_LIMIT,
+            MAP_LIMIT
+        );
+}
+
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+function updateCamera(){
+
+    const cameraDistance=8;
+
+
+    const horizontal=
+        Math.cos(pitch)*
+        cameraDistance;
+
+
+    camera.position.x=
+        player.position.x-
+        Math.sin(yaw)*
+        horizontal;
+
+
+    camera.position.z=
+        player.position.z-
+        Math.cos(yaw)*
+        horizontal;
+
+
+    camera.position.y=
+        player.position.y+
+        3+
+        Math.sin(pitch)*
+        cameraDistance;
+
+
+    camera.lookAt(
+        player.position.x,
+        player.position.y+1.5,
+        player.position.z
+    );
+}
+
+
+/* =====================================================
+   SHOP
+===================================================== */
+
+function openShop(){
+
+    if(!gameStarted){
+        return;
+    }
+
+
+    shopOpen=true;
+
+
+    shop.style.display=
+        "flex";
+
+
+    if(
+        document.pointerLockElement
+    ){
+
+        document.exitPointerLock();
+    }
+
+
+    updateMoney();
+
+    updateSpeed();
+
+    updateInventoryUI();
+}
+
+
+function closeShop(){
+
+    shopOpen=false;
+
+
+    shop.style.display=
+        "none";
+
+
+    if(
+        gameStarted &&
+        chatBox.style.display!=="block" &&
+        roomBox.style.display!=="flex"
+    ){
+
+        renderer.domElement
+            .requestPointerLock();
+    }
+}
+
+
+document.getElementById(
+    "shopClose"
+).onclick=closeShop;
+
+
+/* SPEED +1 */
+
+document.getElementById(
+    "speed1"
+).onclick=()=>{
+
+    if(
+        money>=100 &&
+        speed<MAX_SPEED
+    ){
+
+        money-=100;
+
+        speed=
+            Math.min(
+                speed+1,
+                MAX_SPEED
+            );
+
+
+        updateMoney();
+
+        updateSpeed();
+
+
+        showEvent(
+            "⚡ Hız +1!"
+        );
+    }
+};
+
+
+/* SPEED +5 */
+
+document.getElementById(
+    "speed5"
+).onclick=()=>{
+
+    if(
+        money>=500 &&
+        speed<MAX_SPEED
+    ){
+
+        money-=500;
+
+        speed=
+            Math.min(
+                speed+5,
+                MAX_SPEED
+            );
+
+
+        updateMoney();
+
+        updateSpeed();
+
+
+        showEvent(
+            "⚡ Hız +5!"
+        );
+    }
+};
+
+
+/* SPEED +5 / 10K */
+
+document.getElementById(
+    "speed10k"
+).onclick=()=>{
+
+    if(
+        money>=10000 &&
+        speed<MAX_SPEED
+    ){
+
+        money-=10000;
+
+        speed=
+            Math.min(
+                speed+5,
+                MAX_SPEED
+            );
+
+
+        updateMoney();
+
+        updateSpeed();
+
+
+        showEvent(
+            "⚡ Hız +5!"
+        );
+    }
+};
+
+
+/* INVENTORY +1 */
+
+document.getElementById(
+    "inv1"
+).onclick=()=>{
+
+    if(
+        money>=250
+    ){
+
+        money-=250;
+
+        inventoryCapacity+=1;
+
+
+        updateMoney();
+
+        updateInventoryUI();
+
+
+        showEvent(
+            "🎒 Envanter +1!"
+        );
+    }
+};
+
+
+/* INVENTORY +5 */
+
+document.getElementById(
+    "inv5"
+).onclick=()=>{
+
+    if(
+        money>=1000
+    ){
+
+        money-=1000;
+
+        inventoryCapacity+=5;
+
+
+        updateMoney();
+
+        updateInventoryUI();
+
+
+        showEvent(
+            "🎒 Envanter +5!"
+        );
+    }
+};
+
+
+/* INVENTORY +100 */
+
+document.getElementById(
+    "inv100"
+).onclick=()=>{
+
+    if(
+        money>=20000
+    ){
+
+        money-=20000;
+
+        inventoryCapacity+=100;
+
+
+        updateMoney();
+
+        updateInventoryUI();
+
+
+        showEvent(
+            "🎒 Envanter +100!"
+        );
+    }
+};
+
+
+/* =====================================================
+   🎁 RELASE CODE
+===================================================== */
+
+let relaseUsed=false;
+
+
+document.getElementById(
+    "codeButton"
+).onclick=()=>{
+
+    const input=
+        document.getElementById(
+            "codeInput"
+        );
+
+
+    const code=
+        input.value
+            .trim()
+            .toUpperCase();
+
+
+    if(
+        code==="RELASE"
+    ){
+
+        if(relaseUsed){
+
+            showEvent(
+                "❌ RELASE kodunu zaten kullandın!"
+            );
+
+            return;
+        }
+
+
+        money+=100000;
+
+
+        relaseUsed=true;
+
+
+        updateMoney();
+
+
+        input.value="";
+
+
+        showEvent(
+            "💰 RELASE! +$100.000"
+        );
+
+
+        showBubble(
+            "💰 +$100.000"
+        );
+
+
+        return;
+    }
+
+
+    if(code!==""){
+
+        showEvent(
+            "❌ Geçersiz kod!"
+        );
+
+        input.value="";
+    }
+};
+
+
+/* =====================================================
+   CHAT
+===================================================== */
+
+let bubbleTimer=null;
+
+
+function openChat(){
+
+    if(
+        !gameStarted ||
+        shopOpen ||
+        roomBox.style.display==="flex"
+    ){
+        return;
+    }
+
+
+    chatBox.style.display=
+        "block";
+
+
+    if(
+        document.pointerLockElement
+    ){
+
+        document.exitPointerLock();
+    }
+
+
+    chatInput.focus();
+}
+
+
+function closeChat(){
+
+    chatBox.style.display=
+        "none";
+
+
+    chatInput.blur();
+
+
+    if(
+        gameStarted &&
+        !shopOpen &&
+        roomBox.style.display!=="flex"
+    ){
+
+        renderer.domElement
+            .requestPointerLock();
+    }
+}
+
+
+function showBubble(message){
+
+    bubble.textContent=
+        message;
+
+
+    bubble.style.display=
+        "block";
+
+
+    clearTimeout(
+        bubbleTimer
+    );
+
+
+    bubbleTimer=
+        setTimeout(
+            ()=>{
+
+                bubble.style.display=
+                    "none";
+
+            },
+            5000
+        );
+}
+
+
+function handleChat(message){
+
+    message=
+        message.trim();
+
+
+    if(!message){
+        return;
+    }
+
+
+    const parts=
+        message.split(/\s+/);
+
+
+    /* GIVE COMMAND */
+
+    if(
+        parts.length===4 &&
+        parts[0].toLowerCase()==="/give" &&
+        parts[1].toLowerCase()==="@s" &&
+        parts[2].toLowerCase()==="money"
+    ){
+
+        const amount=
+            Number(parts[3]);
+
+
+        if(
+            Number.isSafeInteger(amount) &&
+            amount>0
+        ){
+
+            money+=amount;
+
+
+            updateMoney();
+
+
+            showBubble(
+                "💰 +$"+
+                amount.toLocaleString(
+                    "tr-TR"
+                )
+            );
+
+
+            showEvent(
+                "💰 +$"+
+                amount.toLocaleString(
+                    "tr-TR"
+                )
+            );
+
+
+            sendNetwork({
+                type:"chat",
+                message:
+                    "💰 +$"+
+                    amount.toLocaleString(
+                        "tr-TR"
+                    )
+            });
+
+
+            return;
+        }
+    }
+
+
+    /* NORMAL CHAT */
+
+    showBubble(
+        message
+    );
+
+
+    sendNetwork({
+        type:"chat",
+        message:message
+    });
+}
+
+
+chatInput.addEventListener(
+    "keydown",
+    event=>{
+
+        if(
+            event.key==="Enter"
+        ){
+
+            event.preventDefault();
+
+
+            handleChat(
+                chatInput.value
+            );
+
+
+            chatInput.value="";
+
+
+            closeChat();
+        }
+
+
+        if(
+            event.key==="Escape"
+        ){
+
+            event.preventDefault();
+
+
+            chatInput.value="";
+
+
+            closeChat();
+        }
+    }
+);
+
+
+/* =====================================================
+   POINTER LOCK
+===================================================== */
+
+renderer.domElement.addEventListener(
+    "click",
+    ()=>{
+
+        if(
+            gameStarted &&
+            !shopOpen &&
+            chatBox.style.display!=="block" &&
+            roomBox.style.display!=="flex"
+        ){
+
+            renderer.domElement
+                .requestPointerLock();
+        }
+    }
+);
+
+
+document.addEventListener(
+    "pointerlockchange",
+    ()=>{
+
+        mouseLocked=
+            document.pointerLockElement===
+            renderer.domElement;
+    }
+);
+
+
+document.addEventListener(
+    "mousemove",
+    event=>{
+
+        if(
+            !mouseLocked ||
+            shopOpen ||
+            !gameStarted ||
+            chatBox.style.display==="block"
+        ){
+            return;
+        }
+
+
+        yaw-=
+            event.movementX*.004;
+
+
+        pitch-=
+            event.movementY*.004;
+
+
+        pitch=
+            THREE.MathUtils.clamp(
+                pitch,
+                -.9,
+                .65
+            );
+    }
+);
+
+
+/* =====================================================
+   KEYBOARD
+===================================================== */
+
+document.addEventListener(
+    "keydown",
+    event=>{
+
+        keys[event.code]=true;
+
+
+        /* CHAT */
+
+        if(
+            event.code==="KeyT" &&
+            gameStarted &&
+            !event.repeat &&
+            !shopOpen &&
+            roomBox.style.display!=="flex"
+        ){
+
+            event.preventDefault();
+
+            openChat();
+
+            return;
+        }
+
+
+        /* MARKET */
+
+        if(
+            event.code==="KeyE" &&
+            gameStarted &&
+            !event.repeat &&
+            !shopOpen &&
+            chatBox.style.display!=="block" &&
+            roomBox.style.display!=="flex"
+        ){
+
+            event.preventDefault();
+
+            openShop();
+
+            return;
+        }
+
+
+        /* ROOM */
+
+        if(
+            event.code==="KeyR" &&
+            gameStarted &&
+            !event.repeat &&
+            !shopOpen &&
+            chatBox.style.display!=="block"
+        ){
+
+            event.preventDefault();
+
+            openRoom();
+
+            return;
+        }
+
+
+        /* ESC */
+
+        if(
+            event.code==="Escape" &&
+            shopOpen
+        ){
+
+            closeShop();
+
+            return;
+        }
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    event=>{
+
+        keys[event.code]=false;
+    }
+);
+
+
+/* =====================================================
+   ROOM
+===================================================== */
+
+let peer=null;
+
+let hostPeer=null;
+
+let isHost=false;
+
+let roomCode="";
+
+
+const connections=
+    new Map();
+
+
+const remotePlayers=
+    new Map();
+
+
+function openRoom(){
+
+    if(!gameStarted){
+
+        showEvent(
+            "Önce oyuna başla!"
+        );
+
+        return;
+    }
+
+
+    roomBox.style.display=
+        "flex";
+
+
+    roomInput.value=
+        roomCode;
+
+
+    roomStatus.textContent="";
+
+
+    setTimeout(
+        ()=>{
+            roomInput.focus();
+        },
+        100
+    );
+}
+
+
+document.getElementById(
+    "roomClose"
+).onclick=()=>{
+
+    roomBox.style.display=
+        "none";
+
+
+    if(
+        gameStarted &&
+        !shopOpen &&
+        chatBox.style.display!=="block"
+    ){
+
+        renderer.domElement
+            .requestPointerLock();
+    }
+};
+
+
+document.getElementById(
+    "roomJoin"
+).onclick=()=>{
+
+    const code=
+        roomInput.value
+            .trim()
+            .replace(/\s/g,"");
+
+
+    if(!code){
+
+        roomStatus.textContent=
+            "❌ Bir oda kodu yaz.";
+
+        return;
+    }
+
+
+    roomCode=code;
+
+
+    startPeerConnection(
+        code
+    );
+};
+
+
+/* =====================================================
+   PEER
+===================================================== */
+
+function startPeerConnection(code){
+
+    roomStatus.textContent=
+        "🌐 Oda aranıyor...";
+
+
+    onlineStatus.textContent=
+        "🟡 Bağlanıyor...";
+
+
+    const wantedId=
+        "eggrush-room-"+code;
+
+
+    try{
+
+        peer=
+            new Peer(
+                wantedId
+            );
+
+    }catch(error){
+
+        joinExistingRoom(
+            code
+        );
+
+        return;
+    }
+
+
+    let opened=false;
+
+
+    peer.on(
+        "open",
+        id=>{
+
+            opened=true;
+
+            isHost=true;
+
+            hostPeer=id;
+
+
+            roomStatus.textContent=
+                "🟢 Oda oluşturuldu!";
+
+
+            onlineStatus.textContent=
+                "🟢 Oda: "+code;
+
+
+            roomBox.style.display=
+                "none";
+
+
+            showEvent(
+                "🌐 Oda oluşturuldu: "+code
+            );
+
+
+            if(gameStarted){
+
+                renderer.domElement
+                    .requestPointerLock();
+            }
+        }
+    );
+
+
+    peer.on(
+        "connection",
+        connection=>{
+
+            setupConnection(
+                connection
+            );
+        }
+    );
+
+
+    peer.on(
+        "error",
+        error=>{
+
+            if(
+                !opened &&
+                (
+                    error.type==="unavailable-id" ||
+                    error.type==="peer-unavailable"
+                )
+            ){
+
+                try{
+
+                    peer.destroy();
+
+                }catch(e){}
+
+
+                joinExistingRoom(
+                    code
+                );
+
+                return;
+            }
+
+
+            roomStatus.textContent=
+                "❌ Bağlantı hatası";
+
+
+            onlineStatus.textContent=
+                "🔴 Bağlantı hatası";
+        }
+    );
+}
+
+
+function joinExistingRoom(code){
+
+    roomStatus.textContent=
+        "🔎 Odaya bağlanılıyor...";
+
+
+    peer=
+        new Peer();
+
+
+    peer.on(
+        "open",
+        id=>{
+
+            hostPeer=
+                "eggrush-room-"+code;
+
+
+            const connection=
+                peer.connect(
+                    hostPeer,
+                    {
+                        reliable:true
+                    }
+                );
+
+
+            setupConnection(
+                connection
+            );
+        }
+    );
+
+
+    peer.on(
+        "error",
+        error=>{
+
+            roomStatus.textContent=
+                "❌ Oda bulunamadı.";
+
+
+            onlineStatus.textContent=
+                "🔴 Offline";
+        }
+    );
+}
+
+
+/* =====================================================
+   CONNECTION
+===================================================== */
+
+function setupConnection(
+    connection
+){
+
+    connection.on(
+        "open",
+        ()=>{
+
+            connections.set(
+                connection.peer,
+                connection
+            );
+
+
+            onlineStatus.textContent=
+                "🟢 Online: "+
+                connections.size;
+
+
+            connection.send({
+
+                type:"player",
+
+                id:
+                    peer ?
+                    peer.id :
+                    "local",
+
+                x:
+                    player.position.x,
+
+                y:
+                    player.position.y,
+
+                z:
+                    player.position.z,
+
+                ry:
+                    player.rotation.y
+            });
+
+
+            showEvent(
+                "🌐 Bir oyuncu bağlandı!"
+            );
+        }
+    );
+
+
+    connection.on(
+        "data",
+        data=>{
+
+            handleNetworkData(
+                data,
+                connection
+            );
+        }
+    );
+
+
+    connection.on(
+        "close",
+        ()=>{
+
+            removeRemotePlayer(
+                connection.peer
+            );
+
+
+            connections.delete(
+                connection.peer
+            );
+
+
+            onlineStatus.textContent=
+                "🟢 Online: "+
+                connections.size;
+        }
+    );
+}
+
+
+/* =====================================================
+   REMOTE PLAYER
+===================================================== */
+
+function createRemotePlayer(id){
+
+    if(
+        remotePlayers.has(id)
+    ){
+
+        return remotePlayers.get(id);
+    }
+
+
+    const remote=
+        new THREE.Group();
+
+
+    const remoteBody=
+        new THREE.Mesh(
+            new THREE.CapsuleGeometry(
+                .65,
+                1.2,
+                8,
+                16
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0xff8a00
+            })
+        );
+
+
+    remoteBody.position.y=
+        1.15;
+
+
+    remoteBody.castShadow=
+        true;
+
+
+    remote.add(
+        remoteBody
+    );
+
+
+    const remoteHead=
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .65,
+                20,
+                20
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0xffb866
+            })
+        );
+
+
+    remoteHead.position.y=
+        2.3;
+
+
+    remoteHead.castShadow=
+        true;
+
+
+    remote.add(
+        remoteHead
+    );
+
+
+    scene.add(
+        remote
+    );
+
+
+    remotePlayers.set(
+        id,
+        remote
+    );
+
+
+    return remote;
+}
+
+
+function removeRemotePlayer(id){
+
+    const remote=
+        remotePlayers.get(
+            id
+        );
+
+
+    if(!remote){
+        return;
+    }
+
+
+    scene.remove(
+        remote
+    );
+
+
+    remotePlayers.delete(
+        id
+    );
+}
+
+
+/* =====================================================
+   NETWORK DATA
+===================================================== */
+
+function handleNetworkData(
+    data,
+    connection
+){
+
+    if(!data){
+        return;
+    }
+
+
+    if(
+        data.type==="player"
+    ){
+
+        const id=
+            data.id ||
+            connection.peer;
+
+
+        const remote=
+            createRemotePlayer(
+                id
+            );
+
+
+        remote.position.set(
+            data.x,
+            data.y,
+            data.z
+        );
+
+
+        remote.rotation.y=
+            data.ry || 0;
+
+
+        return;
+    }
+
+
+    if(
+        data.type==="chat"
+    ){
+
+        showEvent(
+            "💬 "+
+            data.message
+        );
+    }
+}
+
+
+/* =====================================================
+   SEND NETWORK
+===================================================== */
+
+let networkTimer=0;
+
+
+function sendNetwork(data){
+
+    for(
+        const connection
+        of connections.values()
+    ){
+
+        if(
+            connection.open
+        ){
+
+            try{
+
+                connection.send(
+                    data
+                );
+
+            }catch(error){}
+        }
+    }
+}
+
+
+function updateNetwork(delta){
+
+    networkTimer+=delta;
+
+
+    if(
+        networkTimer<.05
+    ){
+        return;
+    }
+
+
+    networkTimer=0;
+
+
+    if(
+        connections.size===0
+    ){
+        return;
+    }
+
+
+    sendNetwork({
+
+        type:"player",
+
+        id:
+            peer ?
+            peer.id :
+            "local",
+
+        x:
+            player.position.x,
+
+        y:
+            player.position.y,
+
+        z:
+            player.position.z,
+
+        ry:
+            player.rotation.y
+    });
+}
+
+
+/* =====================================================
+   BUBBLE
+===================================================== */
+
+function updateBubble(){
+
+    if(
+        bubble.style.display!=="block"
+    ){
+        return;
+    }
+
+
+    const position=
+        new THREE.Vector3(
+            player.position.x,
+            player.position.y+4,
+            player.position.z
+        );
+
+
+    position.project(
+        camera
+    );
+
+
+    const x=
+        (position.x*.5+.5)*
+        innerWidth;
+
+
+    const y=
+        (-position.y*.5+.5)*
+        innerHeight;
+
+
+    bubble.style.left=
+        x+"px";
+
+
+    bubble.style.top=
+        y+"px";
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+startButton.onclick=()=>{
+
+    gameStarted=true;
+
+
+    startScreen.style.display=
+        "none";
+
+
+    updateInventoryUI();
+
+    updateMoney();
+
+    updateSpeed();
+
+
+    startRandomEvents();
+
+
+    startMusic();
+
+
+    showEvent(
+        "🥚 Egg Rush'a hoş geldin!"
+    );
+
+
+    renderer.domElement
+        .requestPointerLock();
+};
+
+
+/* =====================================================
+   RESIZE
+===================================================== */
+
+window.addEventListener(
+    "resize",
+    ()=>{
+
+        camera.aspect=
+            innerWidth/
+            innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+    }
+);
+
+
+/* =====================================================
+   GAME LOOP
+===================================================== */
+
+const clock=
+    new THREE.Clock();
+
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    const delta=
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+
+    updatePlayer(delta);
+
+    updateEnemy(delta);
+
+    updateCamera();
+
+    collectEggs();
+
+    deliverEggs();
+
+    updateNetwork(delta);
+
+    updateBubble();
+
+
+    /* EGGS */
+
+    for(
+        const egg
+        of eggs
+    ){
+
+        if(
+            egg.visible
+        ){
+
+            egg.rotation.y+=
+                delta*1.5;
+
+
+            egg.position.y=
+                1+
+                Math.sin(
+                    performance.now()*.003+
+                    egg.id
+                )*.12;
+        }
+    }
+
+
+    /* MARKET ANIMATION */
+
+    market.rotation.y+=
+        delta*.4;
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+}
+
+
+animate();
+
+</script>
+
+</body>
+</html>
